@@ -56,18 +56,23 @@ Create two lists, one with pumpkin names and one with the respective pumpkin wei
 ```python
 # Create two lists with pumpkin names and weights
 
-pumpkin = None
-weights = None
+pumpkin = ['A', 'B', 'C', 'D', 'E', 'F']
+weights = [19, 14, 15, 9, 10, 17]
 
 # Combine both lists to create a dictionary
 
-pumpkin_dict = None
+pumpkin_dict = {}
+for i, j in zip(pumpkin, weights):
+    pumpkin_dict[i] = j
 
-print (pumpkin_dict)
+print(pumpkin_dict)
 
 #{'A': 19, 'B': 14, 'C': 15, 'D': 9, 'E': 10, 'F': 17}
 
 ```
+
+    {'A': 19, 'B': 14, 'C': 15, 'D': 9, 'E': 10, 'F': 17}
+    
 
 Now, let's try to calculate the mean of the pumpkin population and also visualize the weight distribution. 
 
@@ -78,7 +83,7 @@ Now, let's try to calculate the mean of the pumpkin population and also visualiz
 def calculate_mu(x):
 
     # Use the formula for mu given above
-    d = None   
+    d = np.mean([i for i in x.values()])
 
     return (d)   
 
@@ -88,14 +93,30 @@ mu
 # 14.0
 ```
 
+
+
+
+    14.0
+
+
+
 That was a pretty a straightforward exercise. Let's use the data we have so far to visualize the weights of individual pumpkins and mean weight. 
 
 
 ```python
 # Plot a bar graph showing weights of pumpkins and highlight the mean weight
+plt.bar(pumpkin_dict.keys(), pumpkin_dict.values());
+plt.axhline(y=mu, color='r', linestyle='-', 
+            label = "Mean weight:" + str(mu));
+plt.legend();
+plt.title('Pumpkin Weights');
 
 
 ```
+
+
+![png](index_files/index_9_0.png)
+
 
 We can see only one pumpkin has a weight which is equal to the mean weight (B:14). Let's try to simulate the random sampling process as stated below. 
 
@@ -113,8 +134,9 @@ To achieve this, first, we need to identify all the possible combinations that c
 n = 2 
 
 # Use itertools.combinations() to generate and print a list of combinations
-combs = None
+combs = [i for i in itertools.combinations(pumpkin, n)]
 
+combs
 
 # Using 2 samples, we can see 15 possible combinations as below:
 # [('A', 'B'), ('A', 'C'), ('A', 'D'), ('A', 'E'), ('A', 'F'), ('B', 'C'), ('B', 'D'), 
@@ -122,6 +144,27 @@ combs = None
 #  ('E', 'F')]
 
 ```
+
+
+
+
+    [('A', 'B'),
+     ('A', 'C'),
+     ('A', 'D'),
+     ('A', 'E'),
+     ('A', 'F'),
+     ('B', 'C'),
+     ('B', 'D'),
+     ('B', 'E'),
+     ('B', 'F'),
+     ('C', 'D'),
+     ('C', 'E'),
+     ('C', 'F'),
+     ('D', 'E'),
+     ('D', 'F'),
+     ('E', 'F')]
+
+
 
 Great! We can now generate any number of combinations from the population (try changing the value of `n` above). The next step in the process is to calculate the mean of all possible combinations and study whether these means differ from the population mean, and whether sample size has any effect on estimating the population mean. 
 
@@ -143,14 +186,16 @@ def sample_means(sample_size, data):
     n = sample_size
 
     # Calculate the mean of population
-    mu = None
+    mu = calculate_mu(data)
     #print ("Mean of population is:", mu)
 
     # Generate all possible combinations using given sample size
-    combs = None
+    combs = [i for i in itertools.combinations(data, n)]
 
     # Calculate the mean weight (x_bar) for all the combinations (samples) using the given data
     x_bar_list = []
+    for comb in combs:
+        x_bar_list.append(np.mean([data[i] for i in comb]))
 
     # Calculate sample mean for all combinations and append to x_bar_list
  
@@ -162,7 +207,9 @@ n = 2 #Sample size
 combs, means = sample_means(n, pumpkin_dict)
 
 # Print the sample combinations with their means
-
+for i,j in zip(combs,means):
+    print(i,j)
+print(f'The mean of all sample means mu_x_hat is: {np.mean(means)}')
 
 
 # Using 2 samples, we can see 15 possible combinations as below:
@@ -185,10 +232,55 @@ combs, means = sample_means(n, pumpkin_dict)
 # The mean of all sample means mu_x_hat is: 14.0
 ```
 
+    ('A', 'B') 16.5
+    ('A', 'C') 17.0
+    ('A', 'D') 14.0
+    ('A', 'E') 14.5
+    ('A', 'F') 18.0
+    ('B', 'C') 14.5
+    ('B', 'D') 11.5
+    ('B', 'E') 12.0
+    ('B', 'F') 15.5
+    ('C', 'D') 12.0
+    ('C', 'E') 12.5
+    ('C', 'F') 16.0
+    ('D', 'E') 9.5
+    ('D', 'F') 13.0
+    ('E', 'F') 13.5
+    The mean of all sample means mu_x_hat is: 14.0
+    
+
 Thus, even though each sample may give you an answer involving some error, the expected value is right at the target: exactly the population mean. In other words: 
 >If one does the experiment over and over again, the overall average of the sample mean is exactly the population mean.
 
 In the output above, we can see that some mean values i.e. 14.5, 12, are being repeated in the combinations. We can develop a frequency table to identify the probability of seeing a different mean value. 
+
+
+```python
+i = 12.0
+[np.sum([i == j for j in means])/len(means) for i in means]
+```
+
+
+
+
+    [0.06666666666666667,
+     0.06666666666666667,
+     0.06666666666666667,
+     0.13333333333333333,
+     0.06666666666666667,
+     0.13333333333333333,
+     0.06666666666666667,
+     0.13333333333333333,
+     0.06666666666666667,
+     0.13333333333333333,
+     0.06666666666666667,
+     0.06666666666666667,
+     0.06666666666666667,
+     0.06666666666666667,
+     0.06666666666666667]
+
+
 
 
 ```python
@@ -198,9 +290,10 @@ def calculate_probability(means):
     Output: a list of probablitity of each mean value
     '''
     #Calculate the frequency of each mean value
+        
     freq = None
 
-    prob = []
+    prob = [f'{np.sum([i == j for j in means])}/{len(means)}' for i in means]
 
     # Calculate and append fequency of each mean value in the prob list. 
 
@@ -209,7 +302,8 @@ def calculate_probability(means):
 probs = calculate_probability(means)
 
 # Print combinations with sample means and probability of each mean value
-
+for i,j, k in zip(combs,means, probs):
+    print(i,j, k)
 
 # ('A', 'B') 16.5 1/15
 # ('A', 'C') 17.0 1/15
@@ -229,6 +323,23 @@ probs = calculate_probability(means)
 
 ```
 
+    ('A', 'B') 16.5 1/15
+    ('A', 'C') 17.0 1/15
+    ('A', 'D') 14.0 1/15
+    ('A', 'E') 14.5 2/15
+    ('A', 'F') 18.0 1/15
+    ('B', 'C') 14.5 2/15
+    ('B', 'D') 11.5 1/15
+    ('B', 'E') 12.0 2/15
+    ('B', 'F') 15.5 1/15
+    ('C', 'D') 12.0 2/15
+    ('C', 'E') 12.5 1/15
+    ('C', 'F') 16.0 1/15
+    ('D', 'E') 9.5 1/15
+    ('D', 'F') 13.0 1/15
+    ('E', 'F') 13.5 1/15
+    
+
 Here, we see that the chance that the sample mean is exactly the population mean (i.e. 14) is only 1 in 15 (row 3), very small. It may also happen that the sample mean can never be the same value as the population mean. 
 
 The difference between the sample mean and the population mean is known as the **Sampling Error**.  
@@ -247,6 +358,10 @@ n = 5
 
 # Use above functions to generate combinations as samples with means and calculate the probability of seeing
 # each mean value  with sample size = 5.
+combs, means = sample_means(n, pumpkin_dict)
+probs = calculate_probability(means)
+for i,j, k in zip(combs,means, probs):
+    print(i,j, k)
 
 # Using 5 samples with a population of size, we can see 6 possible combinations 
 # The mean of all sample means mu_x_hat is: 14.0
@@ -259,6 +374,14 @@ n = 5
 
 ```
 
+    ('A', 'B', 'C', 'D', 'E') 13.4 1/6
+    ('A', 'B', 'C', 'D', 'F') 14.8 1/6
+    ('A', 'B', 'C', 'E', 'F') 15.0 1/6
+    ('A', 'B', 'D', 'E', 'F') 13.8 1/6
+    ('A', 'C', 'D', 'E', 'F') 14.0 1/6
+    ('B', 'C', 'D', 'E', 'F') 13.0 1/6
+    
+
 Again, we see that using the sample mean to estimate the population mean involves sampling error. Sample means do not fully agree with the population mean. The mean of sample means, however, is still 14. 
 
 In order to fully appreciate the impact of sample size on estimating the population mean, let's try to visualize sample means and how the spread of values change when changing sample size. 
@@ -269,8 +392,15 @@ In a loop, run the above experiment with sample sizes ranging from 1 to 5 and me
 ```python
 # Run a for loop to execute above code for sample size 1 to 5 and visualise the spread of sample 
 # means
-
-
+for n in range(1,6):    
+    combs, means = sample_means(n, pumpkin_dict)
+    probs = calculate_probability(means)
+    print(f'Using {n} samples with a population of size, we can see {len(combs)} possible combinations ')
+    print(f'The mean of all sample means mu_x_hat is: {np.mean(means)} \n')
+    val = n # this is the value where you want the data to appear on the y-axis.
+    ar = np.arange(10) # just as an example array
+    plt.plot(means, np.zeros_like(means) + val, 'x', label =("Sample size: "+ str(n)))
+    plt.legend()
 
 # Using 1 samples with a population of size, we can see 6 possible combinations 
 # The mean of all sample means mu_x_hat is: 14.0
@@ -287,6 +417,27 @@ In a loop, run the above experiment with sample sizes ranging from 1 to 5 and me
 # Using 5 samples with a population of size, we can see 6 possible combinations 
 # The mean of all sample means mu_x_hat is: 14.0
 ```
+
+    Using 1 samples with a population of size, we can see 6 possible combinations 
+    The mean of all sample means mu_x_hat is: 14.0 
+    
+    Using 2 samples with a population of size, we can see 15 possible combinations 
+    The mean of all sample means mu_x_hat is: 14.0 
+    
+    Using 3 samples with a population of size, we can see 20 possible combinations 
+    The mean of all sample means mu_x_hat is: 14.0 
+    
+    Using 4 samples with a population of size, we can see 15 possible combinations 
+    The mean of all sample means mu_x_hat is: 14.0 
+    
+    Using 5 samples with a population of size, we can see 6 possible combinations 
+    The mean of all sample means mu_x_hat is: 14.0 
+    
+    
+
+
+![png](index_files/index_24_1.png)
+
 
 We can see that with increasing sample size, the **spread** of sample means is reduced and the sample mean values tend to come closer to the population mean.
 
@@ -311,16 +462,23 @@ means_list = []
 combs_list = []
 err_list = []
 # Create a for loop with changing sample sizes
+for n in (1, 2,3,4,5):
+    # Calculate combinations, means and probabilities as earlier
     
-    # Calculate combinations, means as earlier, append to relevant lists
+    combs, means = sample_means(n, pumpkin_dict)
 
-    
+    combs_list.append(combs)
+    means_list.append(means)
 
-    # Calculate and append the standard error by dividing sample means with square root of sample size
+    # Calculate the standard error by dividing sample means with square root of sample size
+    err = round(np.std(means)/np.sqrt(n), 2)
+    err_list.append(err)
 
-    
-
-    # Visualize sample spread and standard error values for each sample
+    val = n # this is the value where you want the data to appear on the y-axis.
+    ar = np.arange(10) # just as an example array
+    plt.plot(means, np.zeros_like(means) + val, 'x', label ="Sample size: "+ str(n) + " , Standard Error: "+ str(err) )
+    plt.legend()
+plt.show()
 ```
 
 Thus, even though each sample may give you an answer involving some error, the expected value is right at the target: exactly the population mean. In other words, if one does the experiment over and over again, the overall average of the sample mean is exactly the population mean. If the sample size is increased, the standard error is reduced. 
